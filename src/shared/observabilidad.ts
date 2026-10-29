@@ -49,7 +49,7 @@ function iniciarUmami() {
   script.src = 'https://stats.nrlsys.com/script.js'
   script.dataset.websiteId = websiteId
   // Solo cuenta visitas en el dominio real, no en previews ni en localhost.
-  script.dataset.domains = 'mikuy.dev'
+  script.dataset.domains = 'mikuy.nrlsys.com'
   document.head.appendChild(script)
 }
 

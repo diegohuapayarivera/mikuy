@@ -8,6 +8,7 @@
     // Las rutas desconocidas devuelven index.html y el front las resuelve.
     "not_found_handling": "single-page-application",
   },
-  // Dominio propio: descomenta cuando mikuy.dev esté en tu cuenta de Cloudflare.
-  // "routes": [{ "pattern": "mikuy.dev", "custom_domain": true }],
+  // Dominio de producción, en la zona nrlsys.com. Cuando se compre mikuy.dev, cámbialo aquí (y ver
+  // la sección Dominio de CLAUDE.md).
+  "routes": [{ "pattern": "mikuy.nrlsys.com", "custom_domain": true }],
 }

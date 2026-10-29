@@ -1,7 +1,8 @@
 # Mikuy
 
 SaaS multi-tenant de gestión de pedidos para restaurantes: salón, cocina, bebidas y caja en
-tiempo real. Producto de NRL Systems (mikuy.dev). Un dev, meta de 4–5 restaurantes.
+tiempo real. Producto de NRL Systems, en https://mikuy.nrlsys.com. Un dev, meta de 4–5
+restaurantes.
 
 Stack: PWA en Vite + React + TypeScript + Tailwind 4, TanStack Query y supabase-js. Supabase
 (Postgres, RLS, Auth, Realtime, Edge Functions, pg_cron). Avance real en [ESTADO.md](ESTADO.md).

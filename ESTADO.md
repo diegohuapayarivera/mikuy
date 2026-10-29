@@ -25,7 +25,7 @@ base. Actualizado el 2026-10-29.
   `VITE_GLITCHTIP_DSN` y `VITE_UMAMI_WEBSITE_ID`. Probado en un navegador headless:
   - Sin variables, no hay mensajes en consola ni peticiones externas.
   - Con variables, el evento llega sin usuario, IP, cookies, headers ni query params, y Umami solo
-    cuenta en mikuy.dev.
+    cuenta en mikuy.nrlsys.com.
 - `lint`, `typecheck`, `format:check` y `build` pasan.
 
 ## Qué falta todavía

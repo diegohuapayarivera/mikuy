@@ -29,7 +29,8 @@ npm run dev
 ## Deploy
 
 1. `npx wrangler login` (una vez).
-2. `npm run deploy`. El build toma los valores públicos de `.env.production`, que está en el repo.
+2. `npm run deploy`. El build toma los valores públicos de `.env.production`, que está en el repo,
+   y se publica en https://mikuy.nrlsys.com.
 
 `npm run dev` usa `.env` (Supabase local); el deploy usa `.env.production` (Supabase demo, luego
 Pro).
