@@ -25,4 +25,11 @@ npm run dev
 | `npm run db:reset`  | Recrea la base local: migraciones + `seed.sql` |
 | `npm run deploy`    | Build + `wrangler deploy` a Cloudflare Workers |
 
+## Deploy
+
+1. `npx wrangler login` (una vez).
+2. Crea `.env.production` con la URL y la key de Supabase en la nube, `VITE_GLITCHTIP_DSN` y
+   `VITE_UMAMI_WEBSITE_ID` (ver `.env.example`).
+3. `npm run deploy`.
+
 Reglas de arquitectura en [CLAUDE.md](CLAUDE.md). Avance real en [ESTADO.md](ESTADO.md).

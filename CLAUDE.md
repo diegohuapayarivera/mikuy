@@ -105,6 +105,9 @@ commit que cambia lo que funciona.
 
 - Los cambios de esquema van como migración en `supabase/migrations/`, nunca a mano en la base.
 - Nunca corras `npm run deploy` sin que te lo pidan.
+- GlitchTip y Umami se inician en `src/shared/observabilidad.ts`, solo en producción. No mandes
+  datos personales: nada de `Sentry.setUser`, ni nombres, teléfonos o montos de clientes en tags,
+  contextos o mensajes de error.
 
 ## TaskView
 

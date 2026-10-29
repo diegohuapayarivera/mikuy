@@ -18,20 +18,30 @@ base. Actualizado el 2026-10-29.
   hace falta Docker corriendo.
 - Cloudflare Workers: `wrangler.jsonc` sirve `dist/` como SPA (las rutas desconocidas devuelven
   `index.html`). Probado con `wrangler dev` y `wrangler deploy --dry-run`; sin deploy real.
+- CI en GitHub Actions (`.github/workflows/ci.yml`): `npm ci`, lint, typecheck, format:check y
+  build en cada push y PR. El job de tests de base (pgTAP) está comentado hasta que haya esquema.
+  Aún no corrió: el repo no tiene remoto en GitHub.
+- GlitchTip (`@sentry/react`) y Umami se activan solo en el build de producción y solo si están
+  `VITE_GLITCHTIP_DSN` y `VITE_UMAMI_WEBSITE_ID`. Probado en un navegador headless:
+  - Sin variables, no hay mensajes en consola ni peticiones externas.
+  - Con variables, el evento llega sin usuario, IP, cookies, headers ni query params, y Umami solo
+    cuenta en mikuy.dev.
 - `lint`, `typecheck`, `format:check` y `build` pasan.
 
 ## Qué falta todavía
 
 - Modelo de datos: no hay tablas, migraciones con esquema, RLS ni RPC.
 - Proyecto de Supabase en la nube y primer deploy a Cloudflare (los hace Diego).
+- DSN de GlitchTip, website ID de Umami y repo en GitHub para que corra el CI.
 - Auth, rutas y pantallas. Las carpetas de `src/features/` están vacías.
-- Tests y CI.
+- Tests (front y pgTAP).
 
 ## Pendiente en esta fase (TaskView)
 
 - #5 Supabase Pro y Cloudflare Workers en mikuy.dev: en curso. Falta el proyecto en la nube y el
   primer deploy.
-- #6 CI con tests, GlitchTip y Umami
+- #6 CI con tests, GlitchTip y Umami: en curso. El código está listo; faltan el DSN, el website ID
+  y el remoto en GitHub. El job de pgTAP se activa con #7.
 - #7 Esquema multi-tenant con RLS
 - #8 Tabla de eventos append-only
 
