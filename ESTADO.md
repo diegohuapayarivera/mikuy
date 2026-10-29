@@ -1,7 +1,7 @@
 # Estado de Mikuy
 
 **Fase actual: Fase 0 · Cimientos.** Repo, infraestructura, esquema multi-tenant y documentación
-base. Actualizado el 2026-10-28.
+base. Actualizado el 2026-10-29.
 
 ## Qué funciona hoy
 
@@ -13,19 +13,24 @@ base. Actualizado el 2026-10-28.
   sombra de tarjeta.
 - Íconos de la PWA, favicon SVG con respaldo `.ico` y logos SVG del kit oficial.
 - El cliente de Supabase y el QueryClient están listos en `src/shared/`, pero nadie los usa todavía.
+- Supabase local configurado con la CLI (`supabase/`, migraciones y `seed.sql` vacíos) y los
+  scripts `db:start`, `db:stop` y `db:reset`. `.env.example` ya apunta a él. Todavía no se levantó:
+  hace falta Docker corriendo.
+- Cloudflare Workers: `wrangler.jsonc` sirve `dist/` como SPA (las rutas desconocidas devuelven
+  `index.html`). Probado con `wrangler dev` y `wrangler deploy --dry-run`; sin deploy real.
 - `lint`, `typecheck`, `format:check` y `build` pasan.
 
 ## Qué falta todavía
 
-- Modelo de datos: no hay tablas, migraciones, RLS ni RPC.
-- Proyecto de Supabase: no hay `.env`. Si algo importa `src/shared/supabase.ts` sin él, la app
-  lanza un error que dice qué falta.
+- Modelo de datos: no hay tablas, migraciones con esquema, RLS ni RPC.
+- Proyecto de Supabase en la nube y primer deploy a Cloudflare (los hace Diego).
 - Auth, rutas y pantallas. Las carpetas de `src/features/` están vacías.
-- Tests, CI y deploy (Cloudflare Workers en mikuy.dev).
+- Tests y CI.
 
 ## Pendiente en esta fase (TaskView)
 
-- #5 Supabase Pro y Cloudflare Workers en mikuy.dev
+- #5 Supabase Pro y Cloudflare Workers en mikuy.dev: en curso. Falta el proyecto en la nube y el
+  primer deploy.
 - #6 CI con tests, GlitchTip y Umami
 - #7 Esquema multi-tenant con RLS
 - #8 Tabla de eventos append-only

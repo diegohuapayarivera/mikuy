@@ -30,3 +30,6 @@ dist-ssr
 
 # vite-plugin-pwa en modo dev
 dev-dist
+
+# Cloudflare Wrangler
+.wrangler

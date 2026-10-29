@@ -7,7 +7,8 @@ PWA en Vite + React + TypeScript + Tailwind, con Supabase detrás.
 
 ```sh
 npm install
-cp .env.example .env   # completa la URL y la anon key de Supabase
+cp .env.example .env   # ya apunta al Supabase local
+npm run db:start       # necesita Docker corriendo
 npm run dev
 ```
 
@@ -19,5 +20,9 @@ npm run dev
 | `npm run lint`      | ESLint                                         |
 | `npm run typecheck` | `tsc -b`                                       |
 | `npm run format`    | Prettier (`format:check` para verificar en CI) |
+| `npm run db:start`  | Levanta Supabase local                         |
+| `npm run db:stop`   | Lo apaga                                       |
+| `npm run db:reset`  | Recrea la base local: migraciones + `seed.sql` |
+| `npm run deploy`    | Build + `wrangler deploy` a Cloudflare Workers |
 
 Reglas de arquitectura en [CLAUDE.md](CLAUDE.md). Avance real en [ESTADO.md](ESTADO.md).

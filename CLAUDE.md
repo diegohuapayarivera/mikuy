@@ -94,10 +94,17 @@ npm run build       # tsc -b + build con el service worker
 npm run lint        # ESLint
 npm run typecheck   # tsc -b
 npm run format      # Prettier
+npm run db:start    # Supabase local (necesita Docker)
+npm run db:stop
+npm run db:reset    # recrea la base local con supabase/migrations y supabase/seed.sql
+npm run deploy      # build + wrangler deploy a Cloudflare Workers
 ```
 
 Antes de cada commit deben pasar `lint`, `typecheck` y `build`. Actualiza `ESTADO.md` en el mismo
 commit que cambia lo que funciona.
+
+- Los cambios de esquema van como migración en `supabase/migrations/`, nunca a mano en la base.
+- Nunca corras `npm run deploy` sin que te lo pidan.
 
 ## TaskView
 
