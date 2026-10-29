@@ -9,5 +9,6 @@ if (!url || !anonKey) {
   )
 }
 
+// Todo lo de Mikuy vive en el esquema `mikuy`, nunca en `public`.
 // Lecturas con supabase.from(...).select(); escrituras solo con supabase.rpc(...).
-export const supabase = createClient(url, anonKey)
+export const supabase = createClient(url, anonKey, { db: { schema: 'mikuy' } })
