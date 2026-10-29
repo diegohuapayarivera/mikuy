@@ -1,0 +1,68 @@
+@import 'tailwindcss';
+
+/*
+ * Tokens del sistema Mikuy · Identidad.
+ * La paleta y las sombras de Tailwind se vacían a propósito: en la app solo
+ * existen los colores de la marca y la sombra de tarjeta.
+ */
+@theme {
+  --font-titulos: 'Schibsted Grotesk', Arial, sans-serif;
+  --font-texto: 'Atkinson Hyperlegible', Verdana, sans-serif;
+  --default-font-family: var(--font-texto);
+
+  --color-*: initial;
+
+  /* Marca */
+  --color-aji-panca: #9e2b1c;
+  --color-aji-vivo: #e25b3f;
+  --color-carbon: #1a1512;
+  --color-carbon-2: #221c18;
+  --color-blanco-cal: #f8f4ee;
+
+  /* Superficies y texto */
+  --color-superficie: #f7f5f2;
+  --color-tarjeta: #ffffff;
+  --color-hundido: #efece8;
+  --color-tinta: #1a1512;
+  --color-tinta-suave: #6b6159;
+
+  /* Estados de plato y mesa: reservados, nunca decoran. Barra / texto. */
+  --color-estado-pendiente: #9aa1ab;
+  --color-estado-pendiente-texto: #3d4450;
+  --color-estado-preparando: #d88a2e;
+  --color-estado-preparando-texto: #7a3d07;
+  --color-estado-listo: #2e9b57;
+  --color-estado-listo-texto: #0e5a2c;
+  --color-estado-por-cobrar: #2f6bc4;
+  --color-estado-por-cobrar-texto: #183f80;
+  --color-estado-no-disponible: #c2372b;
+  --color-estado-no-disponible-texto: #8a1a12;
+  --color-estado-entregado: #cfc6bb;
+  --color-estado-entregado-texto: #5e554e;
+
+  /* Color que elige el restaurante: solo franja superior y sus botones */
+  --color-resto-aji: #8d2a14;
+  --color-resto-anil: #1f4e79;
+  --color-resto-algarrobo: #5b3a22;
+
+  --radius-*: initial;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius: 8px;
+
+  --shadow-*: initial;
+  --shadow-tarjeta: 0 1px 2px rgba(26, 21, 18, 0.08);
+  --shadow: 0 1px 2px rgba(26, 21, 18, 0.08);
+}
+
+@layer base {
+  body {
+    @apply bg-superficie text-tinta antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-titulos font-extrabold;
+  }
+}
