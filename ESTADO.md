@@ -35,6 +35,8 @@ base. Actualizado el 2026-10-29.
     `public, graphql_public, mikuy`.
   - `public` de la otra app sigue igual: 6 tablas, 2 funciones, sus 13 migraciones y el trigger
     `on_auth_user_created`.
+- CI en GitHub Actions en cada push y PR: `npm ci`, lint, typecheck, format:check y build, en
+  verde en `main`. El job de tests de base (pgTAP) está comentado hasta #7.
 - GlitchTip y Umami están listos, pero solo se activan con sus IDs en el build de producción.
 - `lint`, `typecheck`, `format:check` y `build` pasan.
 

@@ -87,6 +87,57 @@ los colores de Mikuy.
   Nunca lo recolorees ni lo reemplaces por texto.
 - Montos en soles con dos decimales (`S/ 56.00`), tiempos en minutos, frases cortas, sin emojis.
 
+## Base de datos
+
+Hay tres entornos (detalle en [ESTADO.md](ESTADO.md)):
+
+- **Local**: Supabase CLI + Docker, con `.env`. Es el que usa `npm run dev`.
+- **Demo**: el proyecto **desing-clothes** (`exxcgaikbjfojpfpiocj`, plan gratis), compartido con
+  otra app. Lo usa el deploy, con `.env.production`.
+- **Pro**: solo si se firma con el cliente. Todo debe seguir listo para esa mudanza
+  ([docs/MUDANZA-PRO.md](docs/MUDANZA-PRO.md)).
+
+### Esquema `mikuy`
+
+- Todo lo de Mikuy vive en el esquema `mikuy`, nunca en `public`, en los tres entornos. supabase-js
+  ya apunta a él (`db: { schema: 'mikuy' }`).
+- Las migraciones crean todo con grants explícitos, porque en `mikuy` no hay grants por defecto:
+  - Esquema: `usage` para `anon`, `authenticated` y `service_role` (ya está en la primera
+    migración).
+  - Tablas: RLS activado y `grant select` solo donde una política lo permite. Nunca `insert`,
+    `update` ni `delete` para `anon` o `authenticated`: las escrituras van por RPC.
+  - Funciones: `revoke execute ... from public` y `grant execute` solo al rol que la usa. Postgres
+    da `execute` a `public` por defecto.
+- RLS por membresía: estar autenticado no basta. Cada política exige que el usuario tenga perfil en
+  `mikuy.perfiles`, y el restaurante sale de ahí. En el demo hay usuarios de la otra app.
+- Lo compartido lleva prefijo: Edge Functions `mikuy-*`, jobs de pg_cron `mikuy_*` y buckets
+  `mikuy-*`.
+
+### Migraciones
+
+- Todo cambio de esquema es una migración en `supabase/migrations/`
+  (`npx supabase migration new <nombre>`), nunca un cambio a mano. Sin `BEGIN`/`COMMIT` propios.
+- Una migración aplicada no se edita: se crea otra. `db:push:demo` compara checksums y se detiene
+  si una cambió.
+- En local y en Pro se usa el flujo normal de la CLI (`db:reset`; `supabase db push` en Pro).
+- En el demo, **solo** `npm run db:push:demo`. Nunca `supabase link`, `db push`, `config push` ni
+  `migration repair` contra desing-clothes: su historial tiene 13 migraciones de otra app.
+- En el demo no toques `public`, `storage`, `auth` ni `supabase_migrations`, ni el trigger
+  `on_auth_user_created`. Ese trigger crea una fila en `public.profiles` por cada usuario nuevo de
+  auth, incluidos los que cree Mikuy.
+- `DATABASE_URL` vive solo en `.env`: nunca la imprimas, la loguees ni la copies a otro archivo.
+  `.env.production` se commitea y solo lleva valores públicos.
+- En la nube, `GET /rest/v1/` a secas exige la secret key. Para verificar que `mikuy` está expuesto,
+  usa `Accept-Profile: mikuy` contra una tabla, o el 406 de un esquema inexistente.
+
+## Dominio
+
+- Producción: https://mikuy.nrlsys.com, custom domain del Worker `mikuy` en la zona nrlsys.com.
+- En el Auth del demo, el Site URL es de la otra app: Mikuy solo agrega sus URLs a Redirect URLs.
+- Cuando se compre mikuy.dev, cambia: `routes` en `wrangler.jsonc`, `data-domains` de Umami en
+  `src/shared/observabilidad.ts`, las URLs de Auth del proyecto en uso, este archivo, README y
+  ESTADO.md.
+
 ## Comandos
 
 ```sh
@@ -98,14 +149,14 @@ npm run format      # Prettier
 npm run db:start    # Supabase local (necesita Docker)
 npm run db:stop
 npm run db:reset    # recrea la base local con supabase/migrations y supabase/seed.sql
-npm run deploy      # build + wrangler deploy a Cloudflare Workers
+npm run db:push:demo  # migraciones pendientes al demo (desing-clothes); pide confirmación
+npm run deploy      # build + wrangler deploy a https://mikuy.nrlsys.com
 ```
 
 Antes de cada commit deben pasar `lint`, `typecheck` y `build`. Actualiza `ESTADO.md` en el mismo
 commit que cambia lo que funciona.
 
-- Los cambios de esquema van como migración en `supabase/migrations/`, nunca a mano en la base.
-- Nunca corras `npm run deploy` sin que te lo pidan.
+- Nunca corras `npm run deploy` ni `npm run db:push:demo` sin que te lo pidan.
 - GlitchTip y Umami se inician en `src/shared/observabilidad.ts`, solo en producción. No mandes
   datos personales: nada de `Sentry.setUser`, ni nombres, teléfonos o montos de clientes en tags,
   contextos o mensajes de error.
