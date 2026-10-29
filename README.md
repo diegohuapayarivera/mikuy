@@ -19,3 +19,5 @@ npm run dev
 | `npm run lint`      | ESLint                                         |
 | `npm run typecheck` | `tsc -b`                                       |
 | `npm run format`    | Prettier (`format:check` para verificar en CI) |
+
+Reglas de arquitectura en [CLAUDE.md](CLAUDE.md). Avance real en [ESTADO.md](ESTADO.md).
