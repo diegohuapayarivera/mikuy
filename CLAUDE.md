@@ -99,6 +99,17 @@ npm run format      # Prettier
 Antes de cada commit deben pasar `lint`, `typecheck` y `build`. Actualiza `ESTADO.md` en el mismo
 commit que cambia lo que funciona.
 
+## TaskView
+
+Proyecto Mikuy (goalId 4).
+
+- Columnas: 11 To Do, 12 Doing, 13 Done, 14 Bloqueado.
+- Etiquetas: 6 Feature, 7 Bug, 8 Refactor, 9 Infra, 10 Docs.
+- Al empezar una tarea, muévela a Doing. Al terminar, a Done y `complete=true`.
+- Bugs, deuda y bloqueos se anotan como tarea apenas aparecen, con su etiqueta. Si algo bloquea
+  una tarea, muévela a Bloqueado.
+- No borres tareas ni crees varias de golpe sin preguntar.
+
 ## Referencias
 
 - [Mikuy · Identidad](https://claude.ai/artifact/Fv12oTY8n22WjhnXKnRGS1): logo, color,

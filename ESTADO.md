@@ -11,7 +11,7 @@ base. Actualizado el 2026-10-28.
   estado.
 - Los tokens de Mikuy · Identidad están en Tailwind (`src/index.css`): colores, radio 8px y la
   sombra de tarjeta.
-- Íconos de la PWA y logos SVG del kit oficial.
+- Íconos de la PWA, favicon SVG con respaldo `.ico` y logos SVG del kit oficial.
 - El cliente de Supabase y el QueryClient están listos en `src/shared/`, pero nadie los usa todavía.
 - `lint`, `typecheck`, `format:check` y `build` pasan.
 
