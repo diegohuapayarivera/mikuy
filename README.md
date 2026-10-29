@@ -12,18 +12,19 @@ npm run db:start       # necesita Docker corriendo
 npm run dev
 ```
 
-| Script              | Qué hace                                       |
-| ------------------- | ---------------------------------------------- |
-| `npm run dev`       | Servidor de desarrollo                         |
-| `npm run build`     | Typecheck + build de producción (con el SW)    |
-| `npm run preview`   | Sirve el build para probar la PWA instalable   |
-| `npm run lint`      | ESLint                                         |
-| `npm run typecheck` | `tsc -b`                                       |
-| `npm run format`    | Prettier (`format:check` para verificar en CI) |
-| `npm run db:start`  | Levanta Supabase local                         |
-| `npm run db:stop`   | Lo apaga                                       |
-| `npm run db:reset`  | Recrea la base local: migraciones + `seed.sql` |
-| `npm run deploy`    | Build + `wrangler deploy` a Cloudflare Workers |
+| Script                 | Qué hace                                                               |
+| ---------------------- | ---------------------------------------------------------------------- |
+| `npm run dev`          | Servidor de desarrollo                                                 |
+| `npm run build`        | Typecheck + build de producción (con el SW)                            |
+| `npm run preview`      | Sirve el build para probar la PWA instalable                           |
+| `npm run lint`         | ESLint                                                                 |
+| `npm run typecheck`    | `tsc -b`                                                               |
+| `npm run format`       | Prettier (`format:check` para verificar en CI)                         |
+| `npm run db:start`     | Levanta Supabase local                                                 |
+| `npm run db:stop`      | Lo apaga                                                               |
+| `npm run db:reset`     | Recrea la base local: migraciones + `seed.sql`                         |
+| `npm run db:push:demo` | Aplica las migraciones pendientes al Supabase demo (pide confirmación) |
+| `npm run deploy`       | Build + `wrangler deploy` a Cloudflare Workers                         |
 
 ## Deploy
 
