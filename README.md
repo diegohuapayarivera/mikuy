@@ -28,8 +28,9 @@ npm run dev
 ## Deploy
 
 1. `npx wrangler login` (una vez).
-2. Crea `.env.production` con la URL y la key de Supabase en la nube, `VITE_GLITCHTIP_DSN` y
-   `VITE_UMAMI_WEBSITE_ID` (ver `.env.example`).
-3. `npm run deploy`.
+2. `npm run deploy`. El build toma los valores públicos de `.env.production`, que está en el repo.
+
+`npm run dev` usa `.env` (Supabase local); el deploy usa `.env.production` (Supabase demo, luego
+Pro).
 
 Reglas de arquitectura en [CLAUDE.md](CLAUDE.md). Avance real en [ESTADO.md](ESTADO.md).

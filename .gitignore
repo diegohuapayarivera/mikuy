@@ -23,10 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
-# Variables de entorno (solo se versiona el ejemplo)
+# Variables de entorno: se versionan el ejemplo y .env.production (solo valores públicos)
 .env
 .env.*
 !.env.example
+!.env.production
 
 # vite-plugin-pwa en modo dev
 dev-dist
