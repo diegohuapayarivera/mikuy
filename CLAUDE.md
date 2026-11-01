@@ -45,13 +45,31 @@ pregunta.
 10. **Descartado: event sourcing, Clean Architecture por capas, offline-first, Redux** (y
     microservicios). No los propongas. Estado del servidor en TanStack Query; estado local con
     `useState`/`useReducer`. El service worker solo precachea el cascarón de la app: nunca cachea
-    respuestas de Supabase.
+    respuestas de Supabase. Sin capa de caché aparte (Redis u otra): TanStack Query + Realtime y el
+    cálculo nocturno de Salud bastan. Se reevalúa solo si se mide lentitud con más clientes.
 11. **Textos de la app en español, tuteando. "Mikuy" siempre con M mayúscula.**
 
 Otras decisiones del documento de arquitectura: RBAC con el rol en `perfiles`, aplicado en RLS y
 en rutas. El plan del restaurante (`restaurante.plan`) decide qué se ve. Umbrales, minutos de aviso
 y color son configuración guardada como datos. Salud lee vistas SQL y un cálculo nocturno de "tu
 normal" con pg_cron.
+
+## Modelo de datos
+
+La fuente de verdad es [docs/MODELO-DATOS.md](docs/MODELO-DATOS.md). La carta real de Sabor de
+Morenas está en [docs/carta-sabor-de-morenas.json](docs/carta-sabor-de-morenas.json). Principios que
+no se negocian:
+
+- **Una fila por unidad** en `items`: "Sopa seca ×13" son 13 filas; la UI agrupa. Así funcionan las
+  tandas, el cobro por partes y separar mesas.
+- **El precio se congela al pedir**: `items` guarda nombre, presentación, precio y estación del
+  momento.
+- **"Hoy" es la fecha del calendario** en la zona horaria del restaurante (`jornada`), aunque haya
+  turnos o varios cierres de caja.
+- **Todo es configurable por restaurante** (estaciones, tiempos de preparación, umbrales, portero).
+  Nada propio de Sabor de Morenas queda fijo en el código.
+- **Solo la administradora, y con motivo**: anular, cortesías y descuentos.
+- Si una tarea pide algo que el modelo no cubre, para y pregunta antes de inventar tablas.
 
 ## Estructura del front
 
@@ -89,17 +107,19 @@ los colores de Mikuy.
 
 ## Base de datos
 
-Hay tres entornos (detalle en [ESTADO.md](ESTADO.md)):
+Hay dos entornos (detalle en [ESTADO.md](ESTADO.md)). **No hay Supabase local ni Docker.**
 
-- **Local**: Supabase CLI + Docker, con `.env`. Es el que usa `npm run dev`.
-- **Demo**: el proyecto **desing-clothes** (`exxcgaikbjfojpfpiocj`, plan gratis), compartido con
-  otra app. Lo usa el deploy, con `.env.production`.
-- **Pro**: solo si se firma con el cliente. Todo debe seguir listo para esa mudanza
-  ([docs/MUDANZA-PRO.md](docs/MUDANZA-PRO.md)).
+- **Demo (desarrollo y pruebas)**: el proyecto **desing-clothes** (`exxcgaikbjfojpfpiocj`, plan
+  gratis), compartido con otra app. Lo usan `npm run dev` (`.env`) y el deploy de pruebas
+  (`.env.production`).
+- **Pro (producción)**: la v1.0.0 sale en Supabase Pro, haya o no cliente fundador. Todo debe seguir
+  listo para esa mudanza ([docs/MUDANZA-PRO.md](docs/MUDANZA-PRO.md); tarea #33 de TaskView).
+- Los tests de base (pgTAP) corren en GitHub Actions, que levanta su propio Supabase con Docker en
+  el CI. Nunca en la máquina de Diego.
 
 ### Esquema `mikuy`
 
-- Todo lo de Mikuy vive en el esquema `mikuy`, nunca en `public`, en los tres entornos. supabase-js
+- Todo lo de Mikuy vive en el esquema `mikuy`, nunca en `public`, en todos los entornos. supabase-js
   ya apunta a él (`db: { schema: 'mikuy' }`).
 - Las migraciones crean todo con grants explícitos, porque en `mikuy` no hay grants por defecto:
   - Esquema: `usage` para `anon`, `authenticated` y `service_role` (ya está en la primera
@@ -119,7 +139,12 @@ Hay tres entornos (detalle en [ESTADO.md](ESTADO.md)):
   (`npx supabase migration new <nombre>`), nunca un cambio a mano. Sin `BEGIN`/`COMMIT` propios.
 - Una migración aplicada no se edita: se crea otra. `db:push:demo` compara checksums y se detiene
   si una cambió.
-- En local y en Pro se usa el flujo normal de la CLI (`db:reset`; `supabase db push` en Pro).
+- En Pro se usa el flujo normal de la CLI (`supabase db push`). En el CI, `supabase start` y
+  `db reset` solo para correr pgTAP.
+- **Toda migración es compatible hacia atrás**: primero se agrega lo nuevo y lo viejo se borra en
+  una versión posterior, cuando ya nada lo usa. Así un rollback de la app nunca choca con la base.
+- **Antes de aplicar migraciones al demo o a Pro hay un respaldo** del esquema `mikuy` (tarea #35).
+  Hasta que exista el script, avisa a Diego antes de cada `db:push:demo`.
 - En el demo, **solo** `npm run db:push:demo`. Nunca `supabase link`, `db push`, `config push` ni
   `migration repair` contra desing-clothes: su historial tiene 13 migraciones de otra app.
 - En el demo no toques `public`, `storage`, `auth` ni `supabase_migrations`, ni el trigger
@@ -146,9 +171,6 @@ npm run build       # tsc -b + build con el service worker
 npm run lint        # ESLint
 npm run typecheck   # tsc -b
 npm run format      # Prettier
-npm run db:start    # Supabase local (necesita Docker)
-npm run db:stop
-npm run db:reset    # recrea la base local con supabase/migrations y supabase/seed.sql
 npm run db:push:demo  # migraciones pendientes al demo (desing-clothes); pide confirmación
 npm run deploy      # build + wrangler deploy a https://mikuy.nrlsys.com
 ```
@@ -161,6 +183,41 @@ commit que cambia lo que funciona.
   datos personales: nada de `Sentry.setUser`, ni nombres, teléfonos o montos de clientes en tags,
   contextos o mensajes de error.
 
+## Calidad: definición de terminado
+
+Una tarea no está terminada, y nada se publica, hasta cumplir todo esto. Aplica desde ahora y a
+cada funcionalidad nueva:
+
+**Seguridad**
+- Toda tabla nueva trae tests pgTAP de RLS: un usuario de otro restaurante no ve nada y
+  `authenticated` no escribe directo.
+- Los avisos de seguridad de Supabase quedan en cero para el esquema `mikuy`.
+- El CI escanea secretos y dependencias vulnerables; un hallazgo alto o crítico bloquea.
+- Límite de intentos en PIN y login. Cabeceras de seguridad en Cloudflare.
+- Ningún dato personal en GlitchTip, Umami ni en logs.
+- Antes de la v1.0.0: revisión completa con OWASP ASVS nivel 1 (tarea #36).
+
+**Tests**
+- pgTAP para cada regla de negocio en la base: estados, cobro, permisos, idempotencia.
+- Tests unitarios en el front para lógica no trivial.
+- Tests de punta a punta (Playwright) para los flujos principales: pedido → cocina → entrega →
+  cobro, incluido el cobro por partes.
+- Antes de cada versión: simulación de servicio con 4 usuarios simultáneos (tarea #37) y, antes de
+  la v1.0.0 y de versiones grandes, prueba exploratoria con agentes de IA (tarea #38).
+- Si el CI no está en verde, no se hace merge ni deploy.
+
+## Versiones y despliegues
+
+- **Versionado semántico**: `vMAYOR.MENOR.PARCHE`. MAYOR rompe compatibilidad, MENOR agrega
+  funcionalidad, PARCHE corrige. Cada versión publicada lleva su etiqueta git y su entrada en
+  `CHANGELOG.md`.
+- **Rollback de la app**: `wrangler rollback` vuelve a la versión anterior del Worker. Por eso las
+  migraciones son compatibles hacia atrás.
+- **Interruptores por restaurante**: una funcionalidad nueva se puede prender o apagar por
+  restaurante desde la base, sin desplegar. Sirve para probarla primero con un restaurante y para
+  apagarla si falla.
+- Ninguna versión sale a clientes sin pasar la definición de terminado.
+
 ## TaskView
 
 Proyecto Mikuy (goalId 4).
@@ -171,6 +228,9 @@ Proyecto Mikuy (goalId 4).
 - Bugs, deuda y bloqueos se anotan como tarea apenas aparecen, con su etiqueta. Si algo bloquea
   una tarea, muévela a Bloqueado.
 - No borres tareas ni crees varias de golpe sin preguntar.
+- Listas: 1 Fase 0 · Cimientos, 2 Fase 1 · Ingreso y carta, 3 Fase 2 · Pedidos en tiempo real,
+  4 Fase 3 · Caja y Salud, 5 Ideas a futuro, 6 Fase 4 · Calidad y lanzamiento.
+- No agregues ideas a "Ideas a futuro" por tu cuenta: las ideas se discuten primero con Diego.
 
 ## Referencias
 
@@ -178,4 +238,5 @@ Proyecto Mikuy (goalId 4).
   tipografía, voz.
 - [Mikuy · Arquitectura](https://claude.ai/artifact/57n7DZ14tRHLPU2yfHZdSE): diagrama y "cómo
   viaja un pedido".
-- Vault: `proyectos/mikuy/arquitectura.md` (decisiones y por qué) y `proyectos/mikuy/salud.md`.
+- Vault: `proyectos/mikuy/arquitectura.md` (decisiones y por qué), `proyectos/mikuy/modelo-datos.md`
+  y `proyectos/mikuy/salud.md`.
