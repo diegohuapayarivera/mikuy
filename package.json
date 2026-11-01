@@ -11,9 +11,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview",
-    "db:start": "supabase start",
-    "db:stop": "supabase stop",
-    "db:reset": "supabase db reset",
     "deploy": "npm run build && wrangler deploy",
     "db:push:demo": "node scripts/db-push-demo.ts"
   },

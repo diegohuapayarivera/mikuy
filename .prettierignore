@@ -4,3 +4,6 @@ package-lock.json
 src/assets/logo
 public
 marca
+# Documentos fuente de Diego: se versionan tal como están.
+docs/MODELO-DATOS.md
+docs/carta-sabor-de-morenas.json

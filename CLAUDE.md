@@ -189,6 +189,7 @@ Una tarea no está terminada, y nada se publica, hasta cumplir todo esto. Aplica
 cada funcionalidad nueva:
 
 **Seguridad**
+
 - Toda tabla nueva trae tests pgTAP de RLS: un usuario de otro restaurante no ve nada y
   `authenticated` no escribe directo.
 - Los avisos de seguridad de Supabase quedan en cero para el esquema `mikuy`.
@@ -198,6 +199,7 @@ cada funcionalidad nueva:
 - Antes de la v1.0.0: revisión completa con OWASP ASVS nivel 1 (tarea #36).
 
 **Tests**
+
 - pgTAP para cada regla de negocio en la base: estados, cobro, permisos, idempotencia.
 - Tests unitarios en el front para lógica no trivial.
 - Tests de punta a punta (Playwright) para los flujos principales: pedido → cocina → entrega →

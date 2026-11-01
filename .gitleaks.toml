@@ -1,0 +1,7 @@
+# gitleaks: reglas por defecto + excepciones para valores que son públicos por diseño.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Publishable keys de Supabase: públicas por diseño, terminan en el bundle."
+regexes = ['''sb_publishable_[A-Za-z0-9_-]+''']

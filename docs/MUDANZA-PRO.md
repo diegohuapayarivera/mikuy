@@ -1,15 +1,16 @@
 # Mudanza a Supabase Pro
 
 Hoy Mikuy corre en el Supabase demo **desing-clothes** (ref `exxcgaikbjfojpfpiocj`, plan gratis),
-compartido con otra app. Cuando se firme con el cliente, Mikuy pasa a un proyecto Pro limpio. Si no
-se firma, se sigue en desing-clothes y nada de esto hace falta.
+compartido con otra app. La v1.0.0 sale en un proyecto Pro limpio, haya o no cliente fundador
+(tarea #33 de TaskView). El demo sigue después como entorno de desarrollo y pruebas.
 
 Todo lo de Mikuy vive en el esquema `mikuy` y en `supabase/migrations/`, así que la mudanza es
-recrear el esquema en el proyecto nuevo y cambiar dos valores públicos.
+recrear el esquema en el proyecto nuevo y cambiar los valores públicos del deploy.
 
 ## Antes de empezar
 
-- Docker corriendo y `npm run db:reset` en verde con las migraciones actuales.
+- CI en verde en `main`: el job `db` aplica todas las migraciones en un Supabase limpio y corre
+  pgTAP. Es la prueba de que `db push` va a funcionar en Pro.
 - `npm run db:push:demo` dice "El demo está al día". Así el demo y el repo coinciden.
 - Decide qué pasa con los datos del demo (paso 8).
 
@@ -44,6 +45,9 @@ nuevo. `mikuy.migraciones` queda vacía en Pro: solo la usa `db:push:demo`.
 Si alguna migración usa `pg_cron` o `pg_net`, activa antes la extensión en Dashboard → Database →
 Extensions.
 
+Desactiva `pg_graphql` en la misma pantalla: Mikuy no usa GraphQL, el demo no la tiene, y con ella
+activa cada tabla legible por `authenticated` aparece como aviso de seguridad (lint 0027).
+
 ## 4. Exponer `mikuy` en la Data API
 
 Dashboard → Project Settings → Data API → Exposed schemas: agrega `mikuy`. Si Mikuy no usa nada de
@@ -52,8 +56,8 @@ Dashboard → Project Settings → Data API → Exposed schemas: agrega `mikuy`.
 Hazlo **después** del `db push`. Si el esquema está expuesto pero no existe, PostgREST no carga el
 schema cache y la API responde 503.
 
-No uses `supabase config push`: `supabase/config.toml` tiene valores de local (por ejemplo
-`site_url = http://localhost:5173`) y los subiría a producción.
+No uses `supabase config push`: `supabase/config.toml` es la configuración del Supabase que levanta
+el CI (por ejemplo `site_url = http://localhost:5173`) y la subiría a producción.
 
 ## 5. Auth
 
@@ -100,15 +104,21 @@ npx supabase db dump --db-url "$DATABASE_URL" --schema mikuy --data-only -f demo
 - Recrea antes los usuarios en Pro (Dashboard o Admin API) y remapea los ids de `mikuy.perfiles`.
 - No commitees el dump: tiene datos reales.
 
-## 9. Cambiar `.env.production` y desplegar
+## 9. Cambiar `.env.production`, la CSP y desplegar
 
-En `.env.production` cambian solo dos líneas, con los valores públicos del proyecto Pro (Project
+En `.env.production` cambian dos líneas, con los valores públicos del proyecto Pro (Project
 Settings → API):
 
 ```sh
 VITE_SUPABASE_URL=https://<ref-pro>.supabase.co
 VITE_SUPABASE_ANON_KEY=sb_publishable_...
 ```
+
+En `public/_headers`, cambia en `connect-src` las dos URLs del demo
+(`https://exxcgaikbjfojpfpiocj.supabase.co` y `wss://...`) por las de Pro. Si no, la CSP bloquea
+las llamadas a Supabase.
+
+`.env` no cambia: `npm run dev` sigue contra el demo.
 
 Después:
 
@@ -136,13 +146,11 @@ responde 401 aunque todo esté bien.
 Luego abre la app en el dominio, entra con un usuario de prueba y revisa que no haya errores en
 GlitchTip.
 
-## 11. Limpiar desing-clothes (opcional, con cuidado)
+## 11. El demo después de la mudanza
 
-Solo cuando Pro lleve unos días estable. Todo con prefijo `mikuy`; no toques nada de la otra app:
+El demo no se borra: sigue siendo el entorno de desarrollo y pruebas.
 
-- `drop schema mikuy cascade;`
-- Quita `mikuy` de los esquemas expuestos.
-- Borra las Edge Functions `mikuy-*`, los jobs `mikuy_*` y los buckets `mikuy-*`.
-- Usuarios de Mikuy: bórralos uno por uno, junto con su fila en `public.profiles` creada por el
-  trigger de la otra app. Revisa la lista dos veces.
-- `DATABASE_URL` en `.env` deja de hacer falta.
+- `npm run dev` y `npm run db:push:demo` siguen contra desing-clothes, con `.env` y `DATABASE_URL`.
+- Cada migración nueva va primero al demo (`db:push:demo`) y, con el CI en verde, a Pro
+  (`supabase db push`).
+- Los datos reales de clientes viven solo en Pro; en el demo, solo datos de prueba.

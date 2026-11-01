@@ -1,0 +1,11 @@
+# Cabeceras de seguridad que Cloudflare Workers agrega a todo lo que sirve.
+# La CSP permite solo lo que la app usa: el Supabase en uso (hoy el demo; cambia en la mudanza a
+# Pro), GlitchTip (errors.nrlsys.com) y Umami (stats.nrlsys.com).
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://stats.nrlsys.com; connect-src 'self' https://exxcgaikbjfojpfpiocj.supabase.co wss://exxcgaikbjfojpfpiocj.supabase.co https://errors.nrlsys.com https://stats.nrlsys.com; img-src 'self' data:; style-src 'self'; font-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin

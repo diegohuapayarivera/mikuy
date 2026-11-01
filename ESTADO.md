@@ -1,59 +1,52 @@
 # Estado de Mikuy
 
 **Fase actual: Fase 0 · Cimientos.** Repo, infraestructura, esquema multi-tenant y documentación
-base. Actualizado el 2026-10-29.
+base. Actualizado el 2026-11-01.
 
 ## Entornos
 
-| Entorno                       | Supabase                                                          | Variables         |
-| ----------------------------- | ----------------------------------------------------------------- | ----------------- |
-| Local (`npm run dev`)         | Supabase local (CLI + Docker)                                     | `.env`            |
-| Producción (`npm run deploy`) | Demo **desing-clothes** (`exxcgaikbjfojpfpiocj`), esquema `mikuy` | `.env.production` |
-| Futuro, si se firma           | Proyecto Pro limpio ([docs/MUDANZA-PRO.md](docs/MUDANZA-PRO.md))  | `.env.production` |
+No hay Supabase local ni Docker en la máquina de Diego.
+
+| Uso                                  | Supabase                                                          | Variables         |
+| ------------------------------------ | ----------------------------------------------------------------- | ----------------- |
+| Desarrollo (`npm run dev`)           | Demo **desing-clothes** (`exxcgaikbjfojpfpiocj`), esquema `mikuy` | `.env`            |
+| Deploy de pruebas (`npm run deploy`) | El mismo demo                                                     | `.env.production` |
+| Tests de base (CI)                   | Supabase propio de GitHub Actions, con Docker                     | —                 |
+| Producción (v1.0.0, tarea #33)       | Proyecto Pro limpio ([docs/MUDANZA-PRO.md](docs/MUDANZA-PRO.md))  | `.env.production` |
 
 ## Qué funciona hoy
 
-- **Producción en https://mikuy.nrlsys.com** (Cloudflare Workers, custom domain). Verificado en un
-  navegador headless: la pantalla de inicio carga con el logo y las fuentes, sin mensajes en
-  consola. El manifest es correcto y el service worker queda activo, controla la página y
-  precachea el cascarón. Las rutas desconocidas devuelven `index.html`.
-- `npm run dev` levanta la PWA contra Supabase local. `npm run build` genera el build con manifest y
-  service worker.
-- Una pantalla de inicio de prueba muestra el logo horizontal, las dos fuentes y los colores de
-  estado.
-- Los tokens de Mikuy · Identidad están en Tailwind (`src/index.css`). Íconos de la PWA, favicon
-  SVG con respaldo `.ico` y logos SVG del kit oficial.
-- **Esquema `mikuy`**: supabase-js apunta a él (`db: { schema: 'mikuy' }`), aunque la app todavía
-  no lo usa. Primera migración (`20261029172411_crear_esquema_mikuy`): crea el esquema, el
-  `usage` para los roles de la API y la tabla interna `mikuy.migraciones` (con RLS y sin acceso
-  desde la API).
-- **Local**: `db:start` y `db:reset` aplican la migración. La API responde 200 en `/rest/v1/` con
-  `Accept-Profile: mikuy`.
-- **Demo**: la migración se aplicó con `npm run db:push:demo` y quedó registrada en
-  `mikuy.migraciones`.
-  - La API expone `mikuy`: con la publishable key, un esquema inexistente responde 406 y lista
-    `public, graphql_public, mikuy`.
-  - `public` de la otra app sigue igual: 6 tablas, 2 funciones, sus 13 migraciones y el trigger
-    `on_auth_user_created`.
-- CI en GitHub Actions en cada push y PR: `npm ci`, lint, typecheck, format:check y build, en
-  verde en `main`. El job de tests de base (pgTAP) está comentado hasta #7.
-- GlitchTip y Umami están listos, pero solo se activan con sus IDs en el build de producción.
-- `lint`, `typecheck`, `format:check` y `build` pasan.
+- **https://mikuy.nrlsys.com** (Cloudflare Workers, custom domain), con cabeceras de seguridad
+  (`public/_headers`): CSP estricta, HSTS, `nosniff`, `X-Frame-Options`, `Referrer-Policy`,
+  `Permissions-Policy` y COOP.
+  - La pantalla de inicio carga con el logo y las fuentes; el service worker queda activo y
+    controla la página.
+  - Las rutas desconocidas devuelven `index.html`.
+- **Observabilidad activa en producción**, verificada tras el deploy:
+  - Umami registra la visita (`/api/send` responde 200 con sesión).
+  - GlitchTip recibe un error de prueba (evento `3e0a4f64…`).
+  - Ninguno recibe datos personales.
+- **CI en cada push y PR**, en verde:
+  - `front`: lint, typecheck, formato, build y `npm audit` (bloquea con hallazgos altos o críticos).
+  - `secretos`: gitleaks 8.30.1 sobre todo el historial.
+  - `db`: levanta su propio Supabase, aplica las migraciones y corre pgTAP (`supabase/tests/`).
+- `npm run dev` levanta la PWA contra el Supabase demo.
+- Tokens de Mikuy · Identidad en Tailwind, íconos de la PWA, favicon y logos del kit oficial.
+- **Esquema `mikuy`** en el demo, con la primera migración aplicada por `npm run db:push:demo`.
+  supabase-js apunta a él, aunque la app todavía no lo usa. `public` de la otra app sigue intacto.
 
 ## Qué falta todavía
 
-- Modelo de datos: tablas, RLS por membresía (`mikuy.perfiles`) y RPC (#7, #8).
-- DSN de GlitchTip y website ID de Umami (#6).
+- Modelo de datos: tablas, RLS por membresía y funciones auxiliares (#7, #8, en curso).
 - Auth, rutas y pantallas. Las carpetas de `src/features/` están vacías.
-- Tests (front y pgTAP).
-- Proyecto Pro: solo si se firma con el cliente (ver [docs/MUDANZA-PRO.md](docs/MUDANZA-PRO.md)).
+- Tests del front (unitarios y Playwright): llegan con las primeras pantallas.
 
 ## Pendiente en esta fase (TaskView)
 
-- #6 CI con tests, GlitchTip y Umami: en curso, faltan los IDs de GlitchTip y Umami. El job de
-  pgTAP se activa con #7.
 - #7 Esquema multi-tenant con RLS
 - #8 Tabla de eventos append-only
+- #39 Cloudflare inyecta su beacon de Web Analytics y la CSP lo bloquea: queda un error en consola
+  hasta apagar esa inyección en el dashboard de Cloudflare.
 
 ## Deuda conocida
 
@@ -65,3 +58,4 @@ base. Actualizado el 2026-10-29.
 
 - En Supabase cloud, `GET /rest/v1/` a secas exige la secret key: con la publishable key responde
   401 aunque el esquema esté bien expuesto. Para verificar, usa el 406 de un esquema inexistente.
+- Umami descarta las visitas de navegadores headless: para probarlo hace falta un user-agent normal.
