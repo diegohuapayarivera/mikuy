@@ -66,9 +66,14 @@ no se negocian:
   momento.
 - **"Hoy" es la fecha del calendario** en la zona horaria del restaurante (`jornada`), aunque haya
   turnos o varios cierres de caja.
-- **Todo es configurable por restaurante** (estaciones, tiempos de preparación, umbrales, portero).
+- **Todo es configurable por restaurante** (estaciones, tiempo de preparación, umbrales, portero).
+  El tiempo de preparación es **un promedio general por restaurante**, no por plato. Lo edita el
+  administrador cuando quiera (por defecto 25 min) y alimenta las sugerencias de cocina y Salud.
   Nada propio de Sabor de Morenas queda fijo en el código.
-- **Solo la administradora, y con motivo**: anular, cortesías y descuentos.
+- **Roles**: `administrador`, `mozo`, `estacion` (cocina, bebidas, barra…) y `portero`. Por encima
+  del personal solo existe `administrador` (lo usa la dueña o la administradora). No hay rol `dueno`
+  ni `admin` aparte.
+- **Solo el administrador, y con motivo**: anular, cortesías y descuentos.
 - Si una tarea pide algo que el modelo no cubre, para y pregunta antes de inventar tablas.
 
 ## Estructura del front
@@ -119,8 +124,12 @@ Hay dos entornos (detalle en [ESTADO.md](ESTADO.md)). **No hay Supabase local ni
 
 ### Esquema `mikuy`
 
-- Todo lo de Mikuy vive en el esquema `mikuy`, nunca en `public`, en todos los entornos. supabase-js
-  ya apunta a él (`db: { schema: 'mikuy' }`).
+- Todo lo de Mikuy vive en los esquemas `mikuy` y `mikuy_privado`, nunca en `public`, en todos los
+  entornos. supabase-js apunta a `mikuy` (`db: { schema: 'mikuy' }`).
+- `mikuy` está expuesto en la API: tablas, vistas y las RPC que llama el front. `mikuy_privado` no
+  está expuesto: ahí van las funciones `security definer` (las que usan las políticas RLS y las que
+  hacen el trabajo de cada RPC). Patrón: la RPC en `mikuy` valida y llama a su función en
+  `mikuy_privado`.
 - Las migraciones crean todo con grants explícitos, porque en `mikuy` no hay grants por defecto:
   - Esquema: `usage` para `anon`, `authenticated` y `service_role` (ya está en la primera
     migración).
@@ -183,30 +192,29 @@ commit que cambia lo que funciona.
   datos personales: nada de `Sentry.setUser`, ni nombres, teléfonos o montos de clientes en tags,
   contextos o mensajes de error.
 
-## Calidad: definición de terminado
+## Calidad
 
-Una tarea no está terminada, y nada se publica, hasta cumplir todo esto. Aplica desde ahora y a
-cada funcionalidad nueva:
+Hay dos niveles. Durante el desarrollo se avanza rápido; lo pesado se hace al final, en la Fase 4,
+antes de publicar una versión.
 
-**Seguridad**
+**Durante el desarrollo (cada tarea)**
 
-- Toda tabla nueva trae tests pgTAP de RLS: un usuario de otro restaurante no ve nada y
-  `authenticated` no escribe directo.
-- Los avisos de seguridad de Supabase quedan en cero para el esquema `mikuy`.
-- El CI escanea secretos y dependencias vulnerables; un hallazgo alto o crítico bloquea.
-- Límite de intentos en PIN y login. Cabeceras de seguridad en Cloudflare.
+- El CI en verde es la verificación: lint, typecheck, build, pgTAP, gitleaks y npm audit. Si pasa,
+  la tarea está lista. No agregues verificaciones manuales extra (navegador, producción, capturas)
+  salvo que Diego las pida.
+- Toda tabla nueva trae RLS y un test pgTAP de aislamiento entre restaurantes.
+- Las reglas que tocan dinero o permisos (cobro, anulaciones, estados) llevan su test pgTAP. El
+  resto de tests puede esperar a la Fase 4.
 - Ningún dato personal en GlitchTip, Umami ni en logs.
-- Antes de la v1.0.0: revisión completa con OWASP ASVS nivel 1 (tarea #36).
+- No despliegues ni apliques migraciones sin que te lo pidan.
 
-**Tests**
+**Antes de la v1.0.0 y de cada versión (Fase 4)**
 
-- pgTAP para cada regla de negocio en la base: estados, cobro, permisos, idempotencia.
-- Tests unitarios en el front para lógica no trivial.
-- Tests de punta a punta (Playwright) para los flujos principales: pedido → cocina → entrega →
-  cobro, incluido el cobro por partes.
-- Antes de cada versión: simulación de servicio con 4 usuarios simultáneos (tarea #37) y, antes de
-  la v1.0.0 y de versiones grandes, prueba exploratoria con agentes de IA (tarea #38).
-- Si el CI no está en verde, no se hace merge ni deploy.
+- Avisos de seguridad de Supabase en cero y revisión OWASP ASVS nivel 1 (tarea #36).
+- Límite de intentos en PIN y login.
+- Tests de punta a punta (Playwright) de los flujos principales, incluido el cobro por partes.
+- Simulación de servicio con 4 usuarios (tarea #37) y prueba con agentes de IA (tarea #38).
+- Si el CI no está en verde, no se publica.
 
 ## Versiones y despliegues
 
@@ -215,10 +223,7 @@ cada funcionalidad nueva:
   `CHANGELOG.md`.
 - **Rollback de la app**: `wrangler rollback` vuelve a la versión anterior del Worker. Por eso las
   migraciones son compatibles hacia atrás.
-- **Interruptores por restaurante**: una funcionalidad nueva se puede prender o apagar por
-  restaurante desde la base, sin desplegar. Sirve para probarla primero con un restaurante y para
-  apagarla si falla.
-- Ninguna versión sale a clientes sin pasar la definición de terminado.
+- Ninguna versión sale a clientes sin pasar el nivel "Antes de cada versión" de Calidad.
 
 ## TaskView
 
@@ -232,9 +237,28 @@ Proyecto Mikuy (goalId 4).
 - No borres tareas ni crees varias de golpe sin preguntar.
 - Listas: 1 Fase 0 · Cimientos, 2 Fase 1 · Ingreso y carta, 3 Fase 2 · Pedidos en tiempo real,
   4 Fase 3 · Caja y Salud, 5 Ideas a futuro, 6 Fase 4 · Calidad y lanzamiento.
-- No agregues ideas a "Ideas a futuro" por tu cuenta: las ideas se discuten primero con Diego.
+- No agregues ideas a "Ideas a futuro" por tu cuenta: las ideas se aterrizan primero con Diego.
+
+## Cómo trabajar
+
+Diego trabaja solo con Claude Code. Cuando diga "inicia la Fase N" (o "sigue con la Fase N"):
+
+1. Lee la lista de esa fase en TaskView y las notas de cada tarea (Qué es, Pasos, Notas).
+2. Haz las tareas en orden. Cada una: a Doing, implementación, CI en verde, un commit, a Done con
+   `complete=true`, y `ESTADO.md` al día en el mismo commit.
+3. Pregunta solo lo que bloquea una decisión de negocio que no esté en este archivo ni en `docs/`.
+   Si una tarea espera una respuesta, muévela a Bloqueado y sigue con la siguiente.
+4. Antes de aplicar migraciones al demo, muestra el plan y espera el OK de Diego.
+5. Al terminar la fase: resumen corto de qué quedó, qué decidiste por tu cuenta y qué falta.
+
+Las pantallas siguen el lienzo de diseño y el sistema de identidad (Referencias). Salud sigue
+[docs/SALUD.md](docs/SALUD.md). Si Diego trae una idea nueva, primero aterrízala con él (qué problema
+resuelve, para quién, en qué plan, cuánto cuesta hacerla) y solo con su OK créala en "Ideas a futuro".
 
 ## Referencias
+
+- [Mikuy · Pantallas del MVP](https://claude.ai/artifact/WJBQUpbPNd3YiVwHhCA8PE): las pantallas
+  diseñadas (estilo A · Carbón), una por rol.
 
 - [Mikuy · Identidad](https://claude.ai/artifact/Fv12oTY8n22WjhnXKnRGS1): logo, color,
   tipografía, voz.

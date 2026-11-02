@@ -6,7 +6,6 @@
   "Cocina",
   "Bebidas"
  ],
- "tiempo_prep_min_por_defecto": null,
  "categorias": [
   {
    "nombre": "Entradas",
@@ -330,7 +329,6 @@
     {
      "nombre": "Sopa seca con carapulcra de pollo",
      "descripcion": "Media porción: martes y miércoles hasta las 3 p. m., presa pecho, no feriados.",
-     "tiempo_prep_min": 25,
      "opciones": [
       {
        "nombre": "Una porción",
@@ -350,7 +348,6 @@
    "platos": [
     {
      "nombre": "Sopa seca con carapulcra",
-     "tiempo_prep_min": 25,
      "opciones": [
       {
        "nombre": "De gallina",
@@ -370,7 +367,6 @@
    "platos": [
     {
      "nombre": "Sopa seca con cau cau",
-     "tiempo_prep_min": 25,
      "opciones": [
       {
        "nombre": "De pollo",
@@ -394,7 +390,6 @@
    "platos": [
     {
      "nombre": "Sopa seca con chanfainita",
-     "tiempo_prep_min": 25,
      "opciones": [
       {
        "nombre": "De pollo",
@@ -489,7 +484,6 @@
     {
      "nombre": "D' Morenas",
      "descripcion": "Sopa seca con pollo, carapulcra, crema de rocoto, ternera al pisco y frejoles. Presa pecho.",
-     "tiempo_prep_min": 25,
      "opciones": [
       {
        "nombre": "Normal",
@@ -500,7 +494,6 @@
     {
      "nombre": "D' Cañete",
      "descripcion": "Sopa seca con pollo, carapulcra, seco de res, frejoles y tuca al pisco. Presa pecho.",
-     "tiempo_prep_min": 25,
      "opciones": [
       {
        "nombre": "Normal",
@@ -511,7 +504,6 @@
     {
      "nombre": "D' Camuchita",
      "descripcion": "Sopa seca con pollo, chanfainita, frejoles, patita en salsa de maní y papa a la huancaína. Presa pecho.",
-     "tiempo_prep_min": 25,
      "opciones": [
       {
        "nombre": "Normal",
@@ -522,7 +514,6 @@
     {
      "nombre": "Afroperuano",
      "descripcion": "Sopa seca con pollo, carapulcra, frejoles, tamal y cau cau. Presa pecho.",
-     "tiempo_prep_min": 25,
      "opciones": [
       {
        "nombre": "Normal",
@@ -1064,5 +1055,6 @@
     }
    ]
   }
- ]
+ ],
+ "tiempo_prep_min": 25
 }
