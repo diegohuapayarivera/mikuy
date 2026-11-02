@@ -1,7 +1,7 @@
 # Estado de Mikuy
 
-**Fase actual: Fase 0 · Cimientos.** Repo, infraestructura, esquema multi-tenant y documentación
-base. Actualizado el 2026-11-01.
+**Fase 0 · Cimientos: terminada.** Repo, infraestructura, esquema multi-tenant y documentación
+base. Siguiente: Fase 1 · Ingreso y carta. Actualizado el 2026-11-01.
 
 ## Entornos
 
@@ -32,19 +32,26 @@ No hay Supabase local ni Docker en la máquina de Diego.
   - `db`: levanta su propio Supabase, aplica las migraciones y corre pgTAP (`supabase/tests/`).
 - `npm run dev` levanta la PWA contra el Supabase demo.
 - Tokens de Mikuy · Identidad en Tailwind, íconos de la PWA, favicon y logos del kit oficial.
-- **Esquema `mikuy`** en el demo, con la primera migración aplicada por `npm run db:push:demo`.
-  supabase-js apunta a él, aunque la app todavía no lo usa. `public` de la otra app sigue intacto.
+- **Modelo de datos completo** (docs/MODELO-DATOS.md) en el demo, por `npm run db:push:demo`:
+  20 tablas en `mikuy`, con RLS por membresía, solo lectura para `authenticated` y escrituras solo
+  por RPC (todavía no hay RPC de negocio). `eventos` es append-only y solo lo lee el administrador.
+  Las funciones `security definer` viven en `mikuy_privado`, que no está expuesto.
+- **Sabor de Morenas cargado en el demo** con `npm run db:seed:demo`: 2 estaciones, 17
+  categorías, 93 platos, 119 presentaciones y 12 mesas. Repetible sin duplicar.
+- **pgTAP en el CI**: estructura y permisos, aislamiento entre restaurantes, sin escritura directa,
+  una unidad no se cobra dos veces, una mesa no está en dos atenciones abiertas, eventos rechaza
+  UPDATE y DELETE, máquina de estados de las unidades y `jornada`. Avisos de seguridad de Supabase
+  en cero para `mikuy`. `public` de la otra app sigue intacto.
 
 ## Qué falta todavía
 
-- Modelo de datos: tablas, RLS por membresía y funciones auxiliares (#7, #8, en curso).
-- Auth, rutas y pantallas. Las carpetas de `src/features/` están vacías.
-- Tests del front (unitarios y Playwright): llegan con las primeras pantallas.
+- RPC de negocio, Auth (PIN y login), rutas y pantallas: Fase 1 en adelante.
+- Lecturas por rol más finas (hoy cualquier miembro lee todo salvo `pines` y `eventos`): llegan con
+  las pantallas.
+- Tests del front (unitarios y Playwright): Fase 4.
 
-## Pendiente en esta fase (TaskView)
+## Pendiente (TaskView)
 
-- #7 Esquema multi-tenant con RLS
-- #8 Tabla de eventos append-only
 - #39 Cloudflare inyecta su beacon de Web Analytics y la CSP lo bloquea: queda un error en consola
   hasta apagar esa inyección en el dashboard de Cloudflare.
 
