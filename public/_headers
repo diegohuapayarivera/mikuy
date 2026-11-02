@@ -9,3 +9,34 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
+  # no-transform evita que Cloudflare inyecte su beacon de Web Analytics en el HTML (lo bloquearía la
+  # CSP). El resto es la política por defecto del Worker. Va en todo porque el HTML se sirve en "/"
+  # y en cualquier ruta del SPA; abajo se quita a los archivos con extensión.
+  Cache-Control: public, max-age=0, must-revalidate, no-transform
+
+# Los archivos estáticos vuelven a la política por defecto, sin no-transform: así Cloudflare los
+# sigue comprimiendo. "! Cache-Control" borra el de arriba antes de poner el nuevo.
+/*.js
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+/*.css
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+/*.woff2
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+/*.woff
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+/*.png
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+/*.svg
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+/*.ico
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+/*.webmanifest
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate

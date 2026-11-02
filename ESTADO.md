@@ -19,6 +19,9 @@ No hay Supabase local ni Docker en la máquina de Diego.
 - **https://mikuy.nrlsys.com** (Cloudflare Workers, custom domain), con cabeceras de seguridad
   (`public/_headers`): CSP estricta, HSTS, `nosniff`, `X-Frame-Options`, `Referrer-Policy`,
   `Permissions-Policy` y COOP.
+  - El HTML sale con `Cache-Control: ... no-transform`, así Cloudflare no inyecta su beacon de Web
+    Analytics y la consola queda sin errores de CSP. Los estáticos conservan la política por
+    defecto y se siguen comprimiendo.
   - La pantalla de inicio carga con el logo y las fuentes; el service worker queda activo y
     controla la página.
   - Las rutas desconocidas devuelven `index.html`.
@@ -49,11 +52,6 @@ No hay Supabase local ni Docker en la máquina de Diego.
 - Lecturas por rol más finas (hoy cualquier miembro lee todo salvo `pines` y `eventos`): llegan con
   las pantallas.
 - Tests del front (unitarios y Playwright): Fase 4.
-
-## Pendiente (TaskView)
-
-- #39 Cloudflare inyecta su beacon de Web Analytics y la CSP lo bloquea: queda un error en consola
-  hasta apagar esa inyección en el dashboard de Cloudflare.
 
 ## Deuda conocida
 
