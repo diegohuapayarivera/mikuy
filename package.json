@@ -12,7 +12,8 @@
     "format:check": "prettier --check .",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
-    "db:push:demo": "node scripts/db-push-demo.ts"
+    "db:push:demo": "node scripts/db-push-demo.ts",
+    "db:seed:demo": "node scripts/db-seed-demo.ts"
   },
   "dependencies": {
     "@fontsource/atkinson-hyperlegible": "^5.3.0",

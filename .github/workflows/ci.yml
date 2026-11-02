@@ -86,3 +86,12 @@ jobs:
           print(f"{len(avisos)} avisos de seguridad en mikuy")
           sys.exit(1 if avisos else 0)
           PY
+      # El seed no duplica: dos corridas dejan los mismos conteos.
+      - name: Seed de Sabor de Morenas, dos veces
+        env:
+          MIKUY_DB_CI: '1'
+        run: |
+          printf 'si\n' | node scripts/db-seed-demo.ts | tail -1 | tee conteo-1.txt
+          printf 'si\n' | node scripts/db-seed-demo.ts | tail -1 | tee conteo-2.txt
+          diff conteo-1.txt conteo-2.txt
+          grep -q '93 platos, 119 presentaciones, 12 mesas' conteo-1.txt

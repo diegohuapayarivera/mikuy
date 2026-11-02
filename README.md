@@ -23,6 +23,7 @@ No hay Supabase local ni Docker: `npm run dev` usa el Supabase demo (desing-clot
 | `npm run typecheck`    | `tsc -b`                                                               |
 | `npm run format`       | Prettier (`format:check` para verificar en CI)                         |
 | `npm run db:push:demo` | Aplica las migraciones pendientes al Supabase demo (pide confirmación) |
+| `npm run db:seed:demo` | Carga Sabor de Morenas en el demo; repetible, no duplica               |
 | `npm run deploy`       | Build + `wrangler deploy` a Cloudflare Workers                         |
 
 ## CI
