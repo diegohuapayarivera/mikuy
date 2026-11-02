@@ -62,3 +62,27 @@ jobs:
           npx supabase start
           -x realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
       - run: npx supabase test db
+      # El demo no tiene pg_graphql; sin él, el CI ve los mismos avisos que el demo.
+      - run: docker exec supabase_db_mikuy psql -U supabase_admin -d postgres -q -c 'drop extension if exists pg_graphql cascade'
+      # Definición de terminado: avisos de seguridad de Supabase (splinter) en cero para Mikuy.
+      - name: Avisos de seguridad en cero
+        env:
+          SPLINTER_COMMIT: fccca4b1c4d8b48b8ccd69bd6b30e84adcb92975
+          SPLINTER_SHA256: d8d558baad3e03832e521c527907fa50a9a172fabd899dd0f5c2504a5a0e9349
+        run: |
+          curl -sSfL -o splinter.sql "https://raw.githubusercontent.com/supabase/splinter/${SPLINTER_COMMIT}/splinter.sql"
+          echo "${SPLINTER_SHA256}  splinter.sql" | sha256sum -c -
+          { echo "begin;"; echo "set local pgrst.db_schemas = 'public,graphql_public,mikuy';"; cat splinter.sql; echo ";"; echo "rollback;"; } > lint.sql
+          docker exec -i supabase_db_mikuy psql -U postgres -d postgres -q -v ON_ERROR_STOP=1 --csv < lint.sql > avisos.csv
+          python3 - avisos.csv <<'PY'
+          import csv, json, sys
+          avisos = [
+              f for f in csv.DictReader(open(sys.argv[1]))
+              if 'SECURITY' in f['categories']
+              and json.loads(f['metadata'] or '{}').get('schema') in ('mikuy', 'mikuy_privado')
+          ]
+          for a in avisos:
+              print(f"{a['level']} {a['name']}: {a['detail']}")
+          print(f"{len(avisos)} avisos de seguridad en mikuy")
+          sys.exit(1 if avisos else 0)
+          PY
